@@ -2,9 +2,6 @@
 
 Super Car Service is a custom car repair company chatbot. Its main task is to provide customers with information about the company's services and the opportunity to sign up for the chosen procedure. Telegram is one of the most popular messengers in the world, which makes it an ideal candidate for hosting a chat bot.
 
-You can find it at the link: https://t.me/super_car_service_bot
-
-
 ![image](https://user-images.githubusercontent.com/72034705/236979952-47882e0b-44c4-4353-a750-7e10ecca2637.png)
 
 ## What can this bot do?
