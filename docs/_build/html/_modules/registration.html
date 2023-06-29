@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>registration &mdash; Car Service Chatbot 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Car Service Chatbot
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">CarServiceBot</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Car Service Chatbot</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Module code</a></li>
+      <li class="breadcrumb-item active">registration</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for registration</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;User registration&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">sqlite3</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">telebot</span> <span class="kn">import</span> <span class="n">types</span>
+<span class="kn">from</span> <span class="nn">telebot.types</span> <span class="kn">import</span> <span class="n">InlineKeyboardMarkup</span><span class="p">,</span> <span class="n">InlineKeyboardButton</span>
+<span class="kn">import</span> <span class="nn">credentials</span>
+<span class="kn">import</span> <span class="nn">design</span>
+<span class="kn">import</span> <span class="nn">contacts</span>
+<span class="kn">import</span> <span class="nn">models</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+
+<span class="c1"># Bot instance</span>
+<span class="n">bot</span> <span class="o">=</span> <span class="n">credentials</span><span class="o">.</span><span class="n">bot</span>
+
+<span class="n">con</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;supercar.db&quot;</span><span class="p">)</span>
+<span class="n">cursor</span> <span class="o">=</span> <span class="n">con</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+
+<span class="n">user_dict</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">user_dict</span>
+
+<div class="viewcode-block" id="part_registration"><a class="viewcode-back" href="../registration.html#registration.part_registration">[docs]</a><span class="k">def</span> <span class="nf">part_registration</span><span class="p">(</span><span class="n">call</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns buttons for choosing what part of info user would like to change&quot;&quot;&quot;</span>
+    <span class="n">button_list</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">InlineKeyboardButton</span><span class="p">(</span><span class="s2">&quot;Personal&quot;</span><span class="p">,</span> <span class="n">callback_data</span><span class="o">=</span><span class="s1">&#39;reg&#39;</span><span class="p">),</span>
+        <span class="n">InlineKeyboardButton</span><span class="p">(</span><span class="s2">&quot;Car&quot;</span><span class="p">,</span> <span class="n">callback_data</span><span class="o">=</span><span class="s1">&#39;change_car&#39;</span><span class="p">)</span>
+    <span class="p">]</span>
+    <span class="n">reply_markup</span> <span class="o">=</span> <span class="n">InlineKeyboardMarkup</span><span class="p">(</span><span class="n">design</span><span class="o">.</span><span class="n">build_menu</span><span class="p">(</span><span class="n">button_list</span><span class="p">,</span> <span class="n">n_cols</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+    <span class="n">cid</span> <span class="o">=</span> <span class="n">call</span><span class="o">.</span><span class="n">from_user</span><span class="o">.</span><span class="n">id</span>
+    <span class="n">text</span><span class="o">=</span><span class="s2">&quot;What part would you like to change in your profile?&quot;</span>
+    <span class="n">bot</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="n">cid</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span>  <span class="n">reply_markup</span> <span class="o">=</span> <span class="n">reply_markup</span><span class="p">)</span></div>
+
+<span class="c1"># ----REGISTRATION CONTACT-----</span>
+
+<div class="viewcode-block" id="registration"><a class="viewcode-back" href="../registration.html#registration.registration">[docs]</a><span class="nd">@bot</span><span class="o">.</span><span class="n">edited_channel_post_handler</span><span class="p">(</span><span class="n">func</span><span class="o">=</span><span class="k">lambda</span> <span class="n">call</span><span class="p">:</span> <span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">registration</span><span class="p">(</span><span class="n">call</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Starts registration and asks user to enter their name&quot;&quot;&quot;</span>
+    <span class="n">cid</span> <span class="o">=</span> <span class="n">call</span><span class="o">.</span><span class="n">from_user</span><span class="o">.</span><span class="n">id</span>
+    <span class="n">mid</span> <span class="o">=</span> <span class="n">call</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">message_id</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%d</span><span class="s1"> + </span><span class="si">%d</span><span class="s1"> + </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span><span class="p">(</span><span class="n">cid</span><span class="p">,</span> <span class="n">mid</span><span class="p">,</span> <span class="n">call</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">text</span><span class="p">))</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="s1">&#39;Starting registration proces...</span><span class="se">\n\n</span><span class="s1">Enter your full name&#39;</span>
+
+    <span class="n">msg</span> <span class="o">=</span> <span class="n">bot</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="n">cid</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">reply_markup</span> <span class="o">=</span> <span class="n">design</span><span class="o">.</span><span class="n">keyboard</span><span class="p">())</span>
+    <span class="n">bot</span><span class="o">.</span><span class="n">register_next_step_handler</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">process_name_step</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="phone"><a class="viewcode-back" href="../registration.html#registration.phone">[docs]</a><span class="k">def</span> <span class="nf">phone</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns button to send phone number automaticly&quot;&quot;&quot;</span>
+    <span class="n">keyboard</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">ReplyKeyboardMarkup</span><span class="p">(</span><span class="n">row_width</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">resize_keyboard</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="n">button_phone</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">KeyboardButton</span><span class="p">(</span><span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;Send phone&quot;</span><span class="p">,</span> <span class="n">request_contact</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="n">keyboard</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">button_phone</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">keyboard</span></div>
+
+
+<div class="viewcode-block" id="check_bttns"><a class="viewcode-back" href="../registration.html#registration.check_bttns">[docs]</a><span class="nd">@bot</span><span class="o">.</span><span class="n">message_handler</span><span class="p">(</span><span class="n">func</span><span class="o">=</span><span class="k">lambda</span> <span class="n">message</span><span class="p">:</span> <span class="n">message</span><span class="o">.</span><span class="n">text</span> <span class="ow">in</span> <span class="n">design</span><span class="o">.</span><span class="n">menu_hello_options</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">check_bttns</span><span class="p">(</span><span class="n">message</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Checks if user entered commands and keywords&quot;&quot;&quot;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;IN ARRAY&quot;</span><span class="p">)</span>
+    <span class="n">design</span><span class="o">.</span><span class="n">handle_menu_click</span><span class="p">(</span><span class="n">message</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="process_name_step"><a class="viewcode-back" href="../registration.html#registration.process_name_step">[docs]</a><span class="k">def</span> <span class="nf">process_name_step</span><span class="p">(</span><span class="n">message</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Continues registration, gets user name and then asks user to enter their phone number&quot;&quot;&quot;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+
+    <span class="n">name_regrex</span> <span class="o">=</span> <span class="s1">&#39;[A-Za-z]{2,25}( [A-Za-z]{1,25})?&#39;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">chat_id</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">chat</span><span class="o">.</span><span class="n">id</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">text</span>
+        <span class="k">if</span> <span class="n">message</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">design</span><span class="o">.</span><span class="n">all_keywords</span><span class="p">:</span>
+            <span class="n">design</span><span class="o">.</span><span class="n">handle_menu_click</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="nb">bool</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="n">name_regrex</span><span class="p">,</span> <span class="n">name</span><span class="p">)):</span>
+            <span class="n">user</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">User</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">user_dict</span><span class="p">[</span><span class="n">chat_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">user</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">bot</span><span class="o">.</span><span class="n">reply_to</span><span class="p">(</span><span class="n">message</span><span class="p">,</span>
+<span class="s1">&#39;Enter your phone number</span><span class="se">\n</span><span class="s1">(Or select the current one from the keyboard)&#39;</span><span class="p">,</span> <span class="n">reply_markup</span> <span class="o">=</span> <span class="n">phone</span><span class="p">())</span>
+            <span class="n">bot</span><span class="o">.</span><span class="n">register_next_step_handler</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">process_phone_step</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">bot</span><span class="o">.</span><span class="n">reply_to</span><span class="p">(</span><span class="n">message</span><span class="p">,</span>
+<span class="sd">&#39;&#39;&#39;Name cannot contain special characters, numbers and be less then 1 letter.\n</span>
+<span class="sd">Please try again. Enter your full name&#39;&#39;&#39;</span><span class="p">)</span>
+            <span class="n">bot</span><span class="o">.</span><span class="n">register_next_step_handler</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">process_name_step</span><span class="p">)</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span>
+        <span class="n">bot</span><span class="o">.</span><span class="n">reply_to</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="s1">&#39;Something went wrong&#39;</span><span class="p">)</span>
+        <span class="n">contacts</span><span class="o">.</span><span class="n">contacts_msg</span><span class="p">(</span><span class="n">message</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="process_phone_step"><a class="viewcode-back" href="../registration.html#registration.process_phone_step">[docs]</a><span class="nd">@bot</span><span class="o">.</span><span class="n">message_handler</span><span class="p">(</span><span class="n">content_types</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;contact&#39;</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">process_phone_step</span><span class="p">(</span><span class="n">message</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Continues registration, gets user phone number and then asks user to enter their email&quot;&quot;&quot;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+
+    <span class="n">phonereg</span> <span class="o">=</span> <span class="s1">&#39;^</span><span class="se">\\</span><span class="s1">+?[1-9][0-9]{7,14}$&#39;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">chat_id</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">chat</span><span class="o">.</span><span class="n">id</span>
+        <span class="n">phone_var</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">text</span>
+
+        <span class="k">if</span><span class="p">(</span><span class="n">phone_var</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span>  <span class="o">|</span> <span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">contact</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="n">phone_var</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">contact</span><span class="o">.</span><span class="n">phone_number</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">phone_var</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">bool</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="n">phonereg</span><span class="p">,</span> <span class="n">phone_var</span><span class="p">)):</span>
+            <span class="n">user</span> <span class="o">=</span> <span class="n">user_dict</span><span class="p">[</span><span class="n">chat_id</span><span class="p">]</span>
+            <span class="n">user</span><span class="o">.</span><span class="n">phone</span> <span class="o">=</span> <span class="n">phone_var</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">bot</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="n">chat_id</span><span class="p">,</span>
+<span class="s1">&#39;Enter your email</span><span class="se">\n</span><span class="s1">(Write &quot;-&quot; to skip the step)&#39;</span><span class="p">,</span> <span class="n">reply_markup</span> <span class="o">=</span> <span class="n">design</span><span class="o">.</span><span class="n">keyboard</span><span class="p">())</span>
+            <span class="n">bot</span><span class="o">.</span><span class="n">register_next_step_handler</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">process_email_step</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">bot</span><span class="o">.</span><span class="n">reply_to</span><span class="p">(</span><span class="n">message</span><span class="p">,</span>
+<span class="s1">&#39;Please write your phone number in international format(For example: +12223334444)&#39;</span><span class="p">)</span>
+            <span class="n">bot</span><span class="o">.</span><span class="n">register_next_step_handler</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">process_phone_step</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span>
+        <span class="n">bot</span><span class="o">.</span><span class="n">reply_to</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="s1">&#39;Something went wrong&#39;</span><span class="p">)</span>
+        <span class="n">contacts</span><span class="o">.</span><span class="n">contacts_msg</span><span class="p">(</span><span class="n">message</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="reg_contact_buttons"><a class="viewcode-back" href="../registration.html#registration.reg_contact_buttons">[docs]</a><span class="k">def</span> <span class="nf">reg_contact_buttons</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns buttons to confirm registration&quot;&quot;&quot;</span>
+    <span class="n">button_list</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">InlineKeyboardButton</span><span class="p">(</span><span class="s2">&quot;Yes&quot;</span><span class="p">,</span> <span class="n">callback_data</span><span class="o">=</span><span class="s1">&#39;save_user&#39;</span><span class="p">),</span>
+        <span class="n">InlineKeyboardButton</span><span class="p">(</span><span class="s2">&quot;No&quot;</span><span class="p">,</span> <span class="n">callback_data</span><span class="o">=</span><span class="s1">&#39;cancel_user&#39;</span><span class="p">)</span>
+    <span class="p">]</span>
+    <span class="n">reply_markup</span> <span class="o">=</span> <span class="n">InlineKeyboardMarkup</span><span class="p">(</span><span class="n">design</span><span class="o">.</span><span class="n">build_menu</span><span class="p">(</span><span class="n">button_list</span><span class="p">,</span> <span class="n">n_cols</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">reply_markup</span></div>
+
+
+<div class="viewcode-block" id="process_email_step"><a class="viewcode-back" href="../registration.html#registration.process_email_step">[docs]</a><span class="nd">@bot</span><span class="o">.</span><span class="n">edited_channel_post_handler</span><span class="p">(</span><span class="n">func</span><span class="o">=</span><span class="k">lambda</span> <span class="n">call</span><span class="p">:</span> <span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">process_email_step</span><span class="p">(</span><span class="n">message</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Continues registration, gets user email and then asks user to confirm registration&quot;&quot;&quot;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+    <span class="n">emailreg</span> <span class="o">=</span> <span class="s1">&#39;([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+&#39;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">chat_id</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">chat</span><span class="o">.</span><span class="n">id</span>
+        <span class="n">email</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">text</span>
+
+        <span class="k">if</span> <span class="n">message</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">design</span><span class="o">.</span><span class="n">all_keywords</span><span class="p">:</span>
+            <span class="n">design</span><span class="o">.</span><span class="n">handle_menu_click</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="k">elif</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">text</span> <span class="o">==</span> <span class="s1">&#39;-&#39;</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="nb">bool</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="n">emailreg</span><span class="p">,</span> <span class="n">email</span><span class="p">))):</span>
+            <span class="n">user</span> <span class="o">=</span> <span class="n">user_dict</span><span class="p">[</span><span class="n">chat_id</span><span class="p">]</span>
+            <span class="n">user</span><span class="o">.</span><span class="n">email</span> <span class="o">=</span> <span class="n">email</span>
+            <span class="n">info</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;&#39;&#39;&lt;b&gt;Your contact information:&lt;/b&gt;</span><span class="se">\n</span>
+<span class="s1">👤</span><span class="si">{</span><span class="n">user_dict</span><span class="p">[</span><span class="n">chat_id</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="si">}</span>
+<span class="s1">📞Tel.:</span><span class="si">{</span><span class="n">user_dict</span><span class="p">[</span><span class="n">chat_id</span><span class="p">]</span><span class="o">.</span><span class="n">phone</span><span class="si">}</span>
+<span class="s1">📧 Email: </span><span class="si">{</span><span class="n">user_dict</span><span class="p">[</span><span class="n">chat_id</span><span class="p">]</span><span class="o">.</span><span class="n">email</span><span class="si">}</span>
+<span class="se">\n\n</span><span class="s1">&lt;b&gt;Save changes?&lt;/b&gt;&#39;&#39;&#39;</span>
+            <span class="n">bot</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="n">chat_id</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="n">parse_mode</span><span class="o">=</span><span class="s1">&#39;html&#39;</span><span class="p">,</span> <span class="n">reply_markup</span><span class="o">=</span> <span class="n">reg_contact_buttons</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">bot</span><span class="o">.</span><span class="n">reply_to</span><span class="p">(</span><span class="n">message</span><span class="p">,</span>
+<span class="s1">&#39;Please enter valid email address or write &quot;-&quot; to skip the step&#39;</span><span class="p">)</span>
+            <span class="n">bot</span><span class="o">.</span><span class="n">register_next_step_handler</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">process_email_step</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span>
+        <span class="n">bot</span><span class="o">.</span><span class="n">reply_to</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="s1">&#39;Something went wrong&#39;</span><span class="p">)</span>
+        <span class="n">contacts</span><span class="o">.</span><span class="n">contacts_msg</span><span class="p">(</span><span class="n">message</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Myroslava R..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

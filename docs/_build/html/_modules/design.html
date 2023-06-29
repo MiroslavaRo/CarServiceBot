@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>design &mdash; Car Service Chatbot 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Car Service Chatbot
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">CarServiceBot</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Car Service Chatbot</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Module code</a></li>
+      <li class="breadcrumb-item active">design</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for design</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Design buttons,  keywords and comapny information&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">telebot</span> <span class="kn">import</span> <span class="n">types</span>
+<span class="kn">from</span> <span class="nn">telebot.types</span> <span class="kn">import</span> <span class="n">InlineKeyboardMarkup</span><span class="p">,</span>  <span class="n">InlineKeyboardButton</span>
+<span class="kn">import</span> <span class="nn">contacts</span>
+<span class="kn">import</span> <span class="nn">credentials</span>
+<span class="kn">import</span> <span class="nn">services</span>
+<span class="kn">import</span> <span class="nn">texts</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+
+<span class="c1"># Bot instance</span>
+<span class="n">bot</span> <span class="o">=</span> <span class="n">credentials</span><span class="o">.</span><span class="n">bot</span>
+
+<span class="c1">#Key words</span>
+<span class="n">start_commands</span><span class="o">=</span> <span class="p">[</span><span class="s2">&quot;/start&quot;</span><span class="p">,</span><span class="s2">&quot;/help&quot;</span><span class="p">,</span> <span class="s2">&quot;/home&quot;</span><span class="p">]</span>
+<span class="n">other_commands</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;/profile&#39;</span><span class="p">,</span><span class="s1">&#39;/aboutus&#39;</span><span class="p">,</span><span class="s1">&#39;/services&#39;</span><span class="p">,</span><span class="s1">&#39;/question&#39;</span><span class="p">]</span>
+<span class="n">menu_options</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;🚘 services&#39;</span><span class="p">,</span><span class="s1">&#39;home&#39;</span><span class="p">,</span> <span class="s1">&#39;🌎 about us&#39;</span><span class="p">,</span><span class="s1">&#39;👩‍🏫 profile&#39;</span><span class="p">]</span>
+<span class="n">menu_hello_options</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;home&#39;</span><span class="p">,</span><span class="s1">&#39;hi&#39;</span><span class="p">,</span><span class="s1">&#39;hello&#39;</span><span class="p">,</span><span class="s1">&#39;start&#39;</span><span class="p">,</span><span class="s1">&#39;help&#39;</span><span class="p">,</span><span class="s1">&#39;menu&#39;</span><span class="p">,</span><span class="s1">&#39;back&#39;</span><span class="p">,</span><span class="s1">&#39;go&#39;</span><span class="p">]</span>
+<span class="n">menu_ask_options</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;question&#39;</span><span class="p">,</span><span class="s1">&#39;questions&#39;</span><span class="p">,</span><span class="s1">&#39;ask&#39;</span><span class="p">,</span><span class="s1">&#39;suggestion&#39;</span><span class="p">,</span><span class="s1">&#39;manager&#39;</span><span class="p">,</span><span class="s1">&#39;human&#39;</span><span class="p">,</span><span class="s1">&#39;chat with manager&#39;</span><span class="p">,</span><span class="s1">&#39;chat with human&#39;</span><span class="p">]</span>
+<span class="n">menu_products</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;products&#39;</span><span class="p">,</span><span class="s1">&#39;product&#39;</span><span class="p">,</span><span class="s1">&#39;service&#39;</span><span class="p">,</span><span class="s1">&#39;services&#39;</span><span class="p">]</span>
+<span class="n">menu_price_services</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;price&#39;</span><span class="p">,</span> <span class="s1">&#39;prices&#39;</span><span class="p">,</span><span class="s1">&#39;cost&#39;</span><span class="p">]</span> <span class="o">+</span><span class="n">menu_products</span>
+
+<span class="n">key_diagnostics</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;diagnostics&#39;</span><span class="p">,</span><span class="s1">&#39;diagnostics&#39;</span><span class="p">,</span> <span class="s1">&#39;undercarriage&#39;</span><span class="p">,</span><span class="s1">&#39;computer&#39;</span><span class="p">,</span><span class="s1">&#39;check&#39;</span><span class="p">]</span>
+<span class="n">key_maintenance</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;maintenance&#39;</span><span class="p">,</span><span class="s1">&#39;comprehensive&#39;</span><span class="p">]</span>
+<span class="n">key_conditioner</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;conditioner&#39;</span><span class="p">,</span> <span class="s1">&#39;refuele&#39;</span><span class="p">,</span><span class="s1">&#39;refueling&#39;</span><span class="p">]</span><span class="c1">#,&#39;refueling conditioner&#39;</span>
+<span class="n">key_paint</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;painting&#39;</span><span class="p">,</span><span class="s1">&#39;paint&#39;</span><span class="p">,</span><span class="s1">&#39;tuning&#39;</span><span class="p">,</span><span class="s1">&#39;scaffold&#39;</span><span class="p">,</span><span class="s1">&#39;scaffolding&#39;</span><span class="p">,</span><span class="s1">&#39;polish&#39;</span><span class="p">,</span><span class="s1">&#39;polishing&#39;</span><span class="p">]</span>
+<span class="n">key_repair</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;repair&#39;</span><span class="p">,</span><span class="s1">&#39;fix&#39;</span><span class="p">,</span><span class="s1">&#39;damage&#39;</span><span class="p">]</span>
+
+<span class="n">service_names</span> <span class="o">=</span> <span class="n">key_diagnostics</span><span class="o">+</span><span class="n">key_maintenance</span><span class="o">+</span><span class="n">key_conditioner</span><span class="o">+</span><span class="n">key_paint</span><span class="o">+</span><span class="n">key_repair</span>
+
+<span class="n">all_keywords</span> <span class="o">=</span> <span class="n">start_commands</span> <span class="o">+</span> <span class="n">other_commands</span> <span class="o">+</span> <span class="n">menu_options</span> <span class="o">+</span> <span class="n">menu_hello_options</span> <span class="o">+</span> <span class="n">menu_ask_options</span>
+<span class="n">all_keywords</span> <span class="o">+=</span> <span class="n">menu_price_services</span> <span class="o">+</span> <span class="n">service_names</span> <span class="c1">#+ services.services_btns</span>
+
+<span class="c1"># ----------BUTTONS LAYOUT DESIGN----------</span>
+<div class="viewcode-block" id="build_menu"><a class="viewcode-back" href="../design.html#design.build_menu">[docs]</a><span class="k">def</span> <span class="nf">build_menu</span><span class="p">(</span><span class="n">buttons</span><span class="p">,</span>  <span class="n">n_cols</span><span class="p">,</span>  <span class="n">header_buttons</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>  <span class="n">footer_buttons</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Helper function for building a list of buttons in a grid&quot;&quot;&quot;</span>
+    <span class="n">menu</span> <span class="o">=</span> <span class="p">[</span><span class="n">buttons</span><span class="p">[</span><span class="n">i</span><span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="n">n_cols</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span>  <span class="nb">len</span><span class="p">(</span><span class="n">buttons</span><span class="p">),</span>  <span class="n">n_cols</span><span class="p">)]</span>
+    <span class="k">if</span> <span class="n">header_buttons</span><span class="p">:</span>
+        <span class="n">menu</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span>  <span class="n">header_buttons</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">footer_buttons</span><span class="p">:</span>
+        <span class="n">menu</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">footer_buttons</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">menu</span></div>
+
+<span class="c1"># --------------KEYBOARD MENU--------------</span>
+<div class="viewcode-block" id="keyboard"><a class="viewcode-back" href="../design.html#design.keyboard">[docs]</a><span class="k">def</span> <span class="nf">keyboard</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Defines keyboard options and returns buttons&quot;&quot;&quot;</span>
+    <span class="n">menu_keyboard</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">ReplyKeyboardMarkup</span><span class="p">(</span><span class="n">resize_keyboard</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="n">btn0</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">KeyboardButton</span><span class="p">(</span><span class="s2">&quot;Home&quot;</span><span class="p">)</span>
+    <span class="n">btn1</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">KeyboardButton</span><span class="p">(</span><span class="s2">&quot;🚘 services&quot;</span><span class="p">)</span>
+    <span class="n">btn2</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">KeyboardButton</span><span class="p">(</span><span class="s2">&quot;🌎 about us&quot;</span><span class="p">)</span>
+    <span class="n">btn3</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">KeyboardButton</span><span class="p">(</span><span class="s2">&quot;👩‍🏫 profile&quot;</span><span class="p">)</span>
+    <span class="n">menu_keyboard</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">btn1</span><span class="p">,</span> <span class="n">btn2</span><span class="p">,</span> <span class="n">btn3</span><span class="p">)</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">btn0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">menu_keyboard</span></div>
+
+
+<div class="viewcode-block" id="handle_menu_click"><a class="viewcode-back" href="../design.html#design.handle_menu_click">[docs]</a><span class="nd">@bot</span><span class="o">.</span><span class="n">message_handler</span><span class="p">(</span><span class="n">func</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">message</span><span class="p">:</span>  <span class="n">message</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">menu_options</span><span class="p">)</span>
+<span class="nd">@bot</span><span class="o">.</span><span class="n">message_handler</span><span class="p">(</span><span class="n">func</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">message</span><span class="p">:</span> <span class="n">message</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;profile&quot;</span><span class="p">)</span>
+<span class="nd">@bot</span><span class="o">.</span><span class="n">message_handler</span><span class="p">(</span><span class="n">func</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">message</span><span class="p">:</span> <span class="n">message</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">menu_hello_options</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">handle_menu_click</span><span class="p">(</span><span class="n">message</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Displays menu-message that allows to choose operation&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;home&quot;</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">menu_hello_options</span><span class="p">):</span>
+        <span class="n">photo</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;./imgs/welcome.jpg&#39;</span><span class="p">,</span>  <span class="s1">&#39;rb&#39;</span><span class="p">)</span>
+        <span class="n">bot</span><span class="o">.</span><span class="n">send_photo</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">from_user</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>  <span class="n">photo</span><span class="p">,</span> <span class="n">texts</span><span class="o">.</span><span class="n">WELCOME_TEXT</span><span class="p">,</span> <span class="n">parse_mode</span> <span class="o">=</span> <span class="s1">&#39;html&#39;</span><span class="p">,</span>
+<span class="n">reply_markup</span> <span class="o">=</span> <span class="n">welcome_message_with_buttons</span><span class="p">())</span>
+        <span class="n">bot</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">from_user</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">texts</span><span class="o">.</span><span class="n">KEYBOARD</span><span class="p">,</span> <span class="n">parse_mode</span> <span class="o">=</span> <span class="s1">&#39;html&#39;</span><span class="p">,</span>
+<span class="n">reply_markup</span> <span class="o">=</span> <span class="n">keyboard</span><span class="p">())</span>
+    <span class="k">elif</span> <span class="n">message</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;🌎 about us&quot;</span><span class="p">:</span>
+        <span class="n">company_info</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;👩‍🏫 profile&#39;</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">text</span> <span class="o">==</span> <span class="s2">&quot;profile&quot;</span><span class="p">):</span>
+        <span class="n">contacts</span><span class="o">.</span><span class="n">contacts_msg</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">message</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;🚘 services&#39;</span><span class="p">:</span>
+        <span class="n">services</span><span class="o">.</span><span class="n">price_msg</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="n">bot</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">from_user</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="s2">&quot;Services options 👇&quot;</span><span class="p">,</span>
+<span class="n">reply_markup</span> <span class="o">=</span> <span class="n">services</span><span class="o">.</span><span class="n">keyboard_services</span><span class="p">())</span></div>
+
+<span class="c1"># -----------------WELCOME BTNS---------</span>
+<div class="viewcode-block" id="welcome_message_with_buttons"><a class="viewcode-back" href="../design.html#design.welcome_message_with_buttons">[docs]</a><span class="k">def</span> <span class="nf">welcome_message_with_buttons</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns message buttons to choose operation&quot;&quot;&quot;</span>
+    <span class="n">button_list</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">InlineKeyboardButton</span><span class="p">(</span><span class="s2">&quot;Our contacts&quot;</span><span class="p">,</span>  <span class="n">callback_data</span> <span class="o">=</span> <span class="s1">&#39;contacts&#39;</span><span class="p">),</span> 
+        <span class="n">InlineKeyboardButton</span><span class="p">(</span><span class="s2">&quot;Services and Products&quot;</span><span class="p">,</span>  <span class="n">callback_data</span> <span class="o">=</span> <span class="s1">&#39;sap&#39;</span><span class="p">),</span> 
+        <span class="n">InlineKeyboardButton</span><span class="p">(</span><span class="s2">&quot;Your profile&quot;</span><span class="p">,</span>  <span class="n">callback_data</span> <span class="o">=</span> <span class="s1">&#39;profile&#39;</span><span class="p">)</span>
+    <span class="p">]</span>
+    <span class="n">reply_markup</span> <span class="o">=</span> <span class="n">InlineKeyboardMarkup</span><span class="p">(</span><span class="n">build_menu</span><span class="p">(</span><span class="n">button_list</span><span class="p">,</span>  <span class="n">n_cols</span> <span class="o">=</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">reply_markup</span></div>
+
+<span class="c1"># ------------------1. COMPANY INFO---------------------------</span>
+<div class="viewcode-block" id="company_info"><a class="viewcode-back" href="../design.html#design.company_info">[docs]</a><span class="nd">@bot</span><span class="o">.</span><span class="n">message_handler</span><span class="p">(</span><span class="n">commands</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;aboutus&quot;</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">company_info</span><span class="p">(</span><span class="n">message</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns message button to visit website&quot;&quot;&quot;</span>
+    <span class="n">button_list</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">InlineKeyboardButton</span><span class="p">(</span><span class="s2">&quot;🌐 Our website&quot;</span><span class="p">,</span>  <span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;https://facebook.com&#39;</span><span class="p">)</span>
+    <span class="p">]</span>
+    <span class="n">reply_markup</span> <span class="o">=</span> <span class="n">InlineKeyboardMarkup</span><span class="p">(</span><span class="n">build_menu</span><span class="p">(</span><span class="n">button_list</span><span class="p">,</span>  <span class="n">n_cols</span> <span class="o">=</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="n">bot</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">from_user</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">texts</span><span class="o">.</span><span class="n">COMPANY_INFO</span><span class="p">,</span> <span class="n">parse_mode</span> <span class="o">=</span> <span class="s1">&#39;html&#39;</span><span class="p">,</span> 
+<span class="n">reply_markup</span> <span class="o">=</span> <span class="n">reply_markup</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="remove_last_bot_message_buttons"><a class="viewcode-back" href="../design.html#design.remove_last_bot_message_buttons">[docs]</a><span class="k">def</span> <span class="nf">remove_last_bot_message_buttons</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Allows to remove message buttons on last bot message&quot;&quot;&quot;</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="n">credentials</span><span class="o">.</span><span class="n">last_bot_message</span>
+    <span class="k">if</span> <span class="n">msg</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span>
+    <span class="n">bot</span><span class="o">.</span><span class="n">edit_message_text</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">text</span><span class="p">,</span>  <span class="n">msg</span><span class="o">.</span><span class="n">chat</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>  <span class="n">msg</span><span class="o">.</span><span class="n">message_id</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Myroslava R..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

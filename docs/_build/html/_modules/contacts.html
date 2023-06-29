@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>contacts &mdash; Car Service Chatbot 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Car Service Chatbot
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">CarServiceBot</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Car Service Chatbot</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Module code</a></li>
+      <li class="breadcrumb-item active">contacts</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for contacts</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;User contact information module&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">sqlite3</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">telebot.types</span> <span class="kn">import</span> <span class="n">InlineKeyboardMarkup</span><span class="p">,</span> <span class="n">InlineKeyboardButton</span>
+<span class="kn">import</span> <span class="nn">credentials</span>
+<span class="kn">import</span> <span class="nn">design</span>
+<span class="kn">import</span> <span class="nn">texts</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+
+<span class="c1"># Bot instance</span>
+<span class="n">bot</span> <span class="o">=</span> <span class="n">credentials</span><span class="o">.</span><span class="n">bot</span>
+<span class="n">MAX_CARS</span> <span class="o">=</span> <span class="n">credentials</span><span class="o">.</span><span class="n">MAX_CARS</span>
+
+
+<div class="viewcode-block" id="user_info"><a class="viewcode-back" href="../contacts.html#contacts.user_info">[docs]</a><span class="k">def</span> <span class="nf">user_info</span><span class="p">(</span><span class="n">user_id</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Retrive user info from database&quot;&quot;&quot;</span>
+    <span class="n">con</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;supercar.db&quot;</span><span class="p">)</span>
+    <span class="n">cur</span> <span class="o">=</span> <span class="n">con</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+
+    <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;SELECT * FROM users WHERE chat_id = ?&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">user_id</span><span class="p">,</span> <span class="p">))</span>
+    <span class="n">user_data</span> <span class="o">=</span> <span class="n">cur</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()</span>
+
+    <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;SELECT * FROM cars WHERE user = ?&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">user_id</span><span class="p">,</span> <span class="p">))</span>
+    <span class="n">cars_data</span> <span class="o">=</span> <span class="n">cur</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+
+    <span class="n">cars</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">cars_data</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">car</span> <span class="ow">in</span> <span class="n">cars_data</span><span class="p">:</span>
+            <span class="n">car_info</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;car_id&#39;</span><span class="p">:</span> <span class="n">car</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+           <span class="s1">&#39;brand&#39;</span><span class="p">:</span> <span class="n">car</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+           <span class="s1">&#39;model&#39;</span><span class="p">:</span><span class="n">car</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+           <span class="s1">&#39;year&#39;</span><span class="p">:</span> <span class="n">car</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
+           <span class="s1">&#39;engine&#39;</span><span class="p">:</span> <span class="n">car</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span>
+           <span class="s1">&#39;tech_passport&#39;</span><span class="p">:</span> <span class="n">car</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span>
+            <span class="p">}</span>
+            <span class="n">cars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">car_info</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">user_data</span><span class="p">:</span>
+        <span class="n">user_info_var</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;chat_id&#39;</span><span class="p">:</span> <span class="n">user_data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+           <span class="s1">&#39;username&#39;</span><span class="p">:</span> <span class="n">user_data</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+           <span class="s1">&#39;full_name&#39;</span><span class="p">:</span> <span class="n">user_data</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+           <span class="s1">&#39;phone&#39;</span><span class="p">:</span> <span class="n">user_data</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
+           <span class="s1">&#39;email&#39;</span><span class="p">:</span> <span class="n">user_data</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span>
+           <span class="s1">&#39;carlist&#39;</span><span class="p">:</span> <span class="n">cars</span>
+        <span class="p">}</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">user_info_var</span><span class="p">)</span>
+
+        <span class="n">con</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">user_info_var</span>
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="contacts_butns"><a class="viewcode-back" href="../contacts.html#contacts.contacts_butns">[docs]</a><span class="k">def</span> <span class="nf">contacts_butns</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Buttons for user info post (Change/Appotments)&quot;&quot;&quot;</span>
+    <span class="n">button_list</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">InlineKeyboardButton</span><span class="p">(</span><span class="s2">&quot;🚘Add car&quot;</span><span class="p">,</span> <span class="n">callback_data</span> <span class="o">=</span> <span class="s1">&#39;add_car&#39;</span><span class="p">),</span>
+        <span class="n">InlineKeyboardButton</span><span class="p">(</span><span class="s2">&quot;⚒Change information&quot;</span><span class="p">,</span> <span class="n">callback_data</span> <span class="o">=</span> <span class="s1">&#39;change&#39;</span><span class="p">),</span>
+         <span class="n">InlineKeyboardButton</span><span class="p">(</span><span class="s2">&quot;✍️Appointments&quot;</span><span class="p">,</span> <span class="n">callback_data</span> <span class="o">=</span> <span class="s1">&#39;appoitments&#39;</span><span class="p">)</span>
+    <span class="p">]</span>
+    <span class="n">reply_markup</span> <span class="o">=</span> <span class="n">InlineKeyboardMarkup</span><span class="p">(</span><span class="n">design</span><span class="o">.</span><span class="n">build_menu</span><span class="p">(</span><span class="n">button_list</span><span class="p">,</span> <span class="n">n_cols</span> <span class="o">=</span> <span class="mi">1</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">reply_markup</span></div>
+
+<div class="viewcode-block" id="register_butn"><a class="viewcode-back" href="../contacts.html#contacts.register_butn">[docs]</a><span class="k">def</span> <span class="nf">register_butn</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Register markup&quot;&quot;&quot;</span>
+    <span class="n">button_list</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">InlineKeyboardButton</span><span class="p">(</span><span class="s2">&quot;Register&quot;</span><span class="p">,</span> <span class="n">callback_data</span> <span class="o">=</span> <span class="s1">&#39;reg&#39;</span><span class="p">)</span>
+    <span class="p">]</span>
+    <span class="n">reply_markup</span> <span class="o">=</span> <span class="n">InlineKeyboardMarkup</span><span class="p">(</span><span class="n">design</span><span class="o">.</span><span class="n">build_menu</span><span class="p">(</span><span class="n">button_list</span><span class="p">,</span> <span class="n">n_cols</span> <span class="o">=</span> <span class="mi">1</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">reply_markup</span></div>
+
+<div class="viewcode-block" id="contacts"><a class="viewcode-back" href="../contacts.html#contacts.contacts">[docs]</a><span class="k">def</span> <span class="nf">contacts</span><span class="p">(</span><span class="n">call</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;User&#39;s contact information.&quot;&quot;&quot;</span>
+
+    <span class="c1"># Try to retrive user info from DB</span>
+    <span class="n">user</span> <span class="o">=</span> <span class="n">user_info</span><span class="p">(</span><span class="n">call</span><span class="o">.</span><span class="n">from_user</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">user</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;❌ You are not registered yet. </span><span class="se">\n</span><span class="s2">Sign in? ✅&quot;</span>
+        <span class="n">bot</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="n">call</span><span class="o">.</span><span class="n">from_user</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">parse_mode</span> <span class="o">=</span> <span class="s1">&#39;html&#39;</span><span class="p">,</span> <span class="n">reply_markup</span> <span class="o">=</span> <span class="n">register_butn</span><span class="p">())</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">fullname</span> <span class="o">=</span> <span class="n">user</span><span class="p">[</span><span class="s1">&#39;full_name&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">user</span><span class="p">[</span><span class="s1">&#39;phone&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">phone</span> <span class="o">=</span> <span class="n">user</span><span class="p">[</span><span class="s1">&#39;phone&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">phone</span> <span class="o">=</span> <span class="s1">&#39;-&#39;</span>
+
+        <span class="k">if</span> <span class="n">user</span><span class="p">[</span><span class="s1">&#39;email&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">email</span> <span class="o">=</span> <span class="n">user</span><span class="p">[</span><span class="s1">&#39;email&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">email</span> <span class="o">=</span> <span class="s1">&#39;-&#39;</span>
+
+        <span class="n">cars</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="k">if</span> <span class="n">user</span><span class="p">[</span><span class="s1">&#39;carlist&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">cars</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&lt;b&gt;🚘Your cars:&lt;/b&gt;</span><span class="se">\n</span><span class="s1">&#39;</span>
+
+            <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">car</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">user</span><span class="p">[</span><span class="s1">&#39;carlist&#39;</span><span class="p">]):</span>
+                <span class="n">brand</span> <span class="o">=</span> <span class="n">car</span><span class="p">[</span><span class="s1">&#39;brand&#39;</span><span class="p">]</span>
+                <span class="n">model</span> <span class="o">=</span> <span class="n">car</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">]</span>
+                <span class="n">year</span> <span class="o">=</span> <span class="n">car</span><span class="p">[</span><span class="s1">&#39;year&#39;</span><span class="p">]</span>
+                <span class="n">engine</span> <span class="o">=</span> <span class="n">car</span><span class="p">[</span><span class="s1">&#39;engine&#39;</span><span class="p">]</span>
+                <span class="k">if</span><span class="p">(</span><span class="n">brand</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">year</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+                    <span class="n">car_txt</span> <span class="o">=</span> <span class="s2">&quot;Your tech passport processing.&quot;</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">car_txt</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">brand</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">model</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">year</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">engine</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="n">cars</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;&#39;&#39;</span><span class="si">{</span><span class="p">(</span><span class="n">index</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s1">. </span><span class="si">{</span><span class="n">car_txt</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;&#39;&#39;</span>
+
+        <span class="n">contact</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;&lt;b&gt;Your contact information:&lt;/b&gt;</span><span class="se">\n\n</span><span class="s1">👤</span><span class="si">{</span><span class="n">fullname</span><span class="si">}</span><span class="se">\n</span><span class="s1">📞Tel.:</span><span class="si">{</span><span class="n">phone</span><span class="si">}</span><span class="se">\n</span><span class="s1">📧 Email: </span><span class="si">{</span><span class="n">email</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
+
+        <span class="n">text</span> <span class="o">=</span> <span class="n">contact</span> <span class="o">+</span> <span class="n">cars</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Call msg: &quot;</span><span class="p">,</span> <span class="n">call</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">call</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">text</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">call</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">text</span> <span class="o">==</span> <span class="n">texts</span><span class="o">.</span><span class="n">WELCOME_TEXT</span><span class="p">):</span>
+            <span class="n">bot</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="n">call</span><span class="o">.</span><span class="n">from_user</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span>
+           <span class="n">parse_mode</span> <span class="o">=</span> <span class="s1">&#39;html&#39;</span><span class="p">,</span> <span class="n">reply_markup</span> <span class="o">=</span> <span class="n">contacts_butns</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">bot</span><span class="o">.</span><span class="n">edit_message_text</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">call</span><span class="o">.</span><span class="n">from_user</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+           <span class="n">call</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">message_id</span><span class="p">,</span>
+           <span class="n">parse_mode</span> <span class="o">=</span> <span class="s1">&#39;html&#39;</span><span class="p">,</span>
+           <span class="n">reply_markup</span> <span class="o">=</span> <span class="n">contacts_butns</span><span class="p">())</span>
+            <span class="n">bot</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="n">call</span><span class="o">.</span><span class="n">from_user</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+           <span class="n">texts</span><span class="o">.</span><span class="n">KEYBOARD</span><span class="p">,</span>
+           <span class="n">parse_mode</span> <span class="o">=</span> <span class="s1">&#39;html&#39;</span><span class="p">,</span>
+           <span class="n">reply_markup</span> <span class="o">=</span> <span class="n">design</span><span class="o">.</span><span class="n">keyboard</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="contacts_msg"><a class="viewcode-back" href="../contacts.html#contacts.contacts_msg">[docs]</a><span class="nd">@bot</span><span class="o">.</span><span class="n">message_handler</span><span class="p">(</span><span class="n">commands</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;profile&quot;</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">contacts_msg</span><span class="p">(</span><span class="n">message</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Copy for message not callback&quot;&quot;&quot;</span>
+    <span class="n">user</span> <span class="o">=</span> <span class="n">user_info</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">from_user</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">user</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;❌ You are not registered yet. </span><span class="se">\n</span><span class="s2">Sign in? ✅?&quot;</span>
+        <span class="n">bot</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">from_user</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">parse_mode</span> <span class="o">=</span> <span class="s1">&#39;html&#39;</span><span class="p">,</span> <span class="n">reply_markup</span> <span class="o">=</span> <span class="n">register_butn</span><span class="p">())</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">fullname</span> <span class="o">=</span> <span class="n">user</span><span class="p">[</span><span class="s1">&#39;full_name&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">user</span><span class="p">[</span><span class="s1">&#39;phone&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">phone</span> <span class="o">=</span> <span class="n">user</span><span class="p">[</span><span class="s1">&#39;phone&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">phone</span> <span class="o">=</span> <span class="s1">&#39;-&#39;</span>
+
+        <span class="k">if</span> <span class="n">user</span><span class="p">[</span><span class="s1">&#39;email&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">email</span> <span class="o">=</span> <span class="n">user</span><span class="p">[</span><span class="s1">&#39;email&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">email</span> <span class="o">=</span> <span class="s1">&#39;-&#39;</span>
+
+        <span class="n">cars</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="k">if</span> <span class="n">user</span><span class="p">[</span><span class="s1">&#39;carlist&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">cars</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&lt;b&gt;🚘Your cars:&lt;/b&gt;</span><span class="se">\n</span><span class="s1">&#39;</span>
+
+            <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">car</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">user</span><span class="p">[</span><span class="s1">&#39;carlist&#39;</span><span class="p">]):</span>
+                <span class="n">brand</span> <span class="o">=</span> <span class="n">car</span><span class="p">[</span><span class="s1">&#39;brand&#39;</span><span class="p">]</span>
+                <span class="n">model</span> <span class="o">=</span> <span class="n">car</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">]</span>
+                <span class="n">year</span> <span class="o">=</span> <span class="n">car</span><span class="p">[</span><span class="s1">&#39;year&#39;</span><span class="p">]</span>
+                <span class="n">engine</span> <span class="o">=</span> <span class="n">car</span><span class="p">[</span><span class="s1">&#39;engine&#39;</span><span class="p">]</span>
+                <span class="k">if</span><span class="p">(</span><span class="n">brand</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">year</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+                    <span class="n">car_txt</span> <span class="o">=</span> <span class="s2">&quot;Your tech passport processing.&quot;</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">car_txt</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">brand</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">model</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">year</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">engine</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="n">cars</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;&#39;&#39;</span><span class="si">{</span><span class="p">(</span><span class="n">index</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s1">. </span><span class="si">{</span><span class="n">car_txt</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;&#39;&#39;</span>
+
+        <span class="n">contact</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;&lt;b&gt;Your contact information:&lt;/b&gt;</span><span class="se">\n\n</span><span class="s1">👤</span><span class="si">{</span><span class="n">fullname</span><span class="si">}</span><span class="se">\n</span><span class="s1">📞Tel.:</span><span class="si">{</span><span class="n">phone</span><span class="si">}</span><span class="se">\n</span><span class="s1">📧 Email: </span><span class="si">{</span><span class="n">email</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">contact</span> <span class="o">+</span> <span class="n">cars</span>
+        <span class="n">bot</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">from_user</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">parse_mode</span> <span class="o">=</span> <span class="s1">&#39;html&#39;</span><span class="p">,</span> <span class="n">reply_markup</span> <span class="o">=</span> <span class="n">contacts_butns</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="save_data"><a class="viewcode-back" href="../contacts.html#contacts.save_data">[docs]</a><span class="k">def</span> <span class="nf">save_data</span><span class="p">(</span><span class="n">call</span><span class="p">,</span> <span class="n">user</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Save user function&quot;&quot;&quot;</span>
+    <span class="n">con</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;supercar.db&quot;</span><span class="p">)</span>
+    <span class="n">cur</span> <span class="o">=</span> <span class="n">con</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;INSERT OR REPLACE INTO users (chat_id, username, full_name, phone, email)</span>
+<span class="s1">        VALUES (?, ?, ?, ?, ?)&#39;&#39;&#39;</span><span class="p">,</span>
+       <span class="p">(</span><span class="n">call</span><span class="o">.</span><span class="n">from_user</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">call</span><span class="o">.</span><span class="n">from_user</span><span class="o">.</span><span class="n">username</span><span class="p">,</span> <span class="n">user</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">user</span><span class="o">.</span><span class="n">phone</span><span class="p">,</span> <span class="n">user</span><span class="o">.</span><span class="n">email</span><span class="p">))</span>
+
+        <span class="n">con</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+        <span class="n">bot</span><span class="o">.</span><span class="n">answer_callback_query</span><span class="p">(</span><span class="n">call</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="s2">&quot;Data saved successfully!&quot;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2"> error occurred: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">bot</span><span class="o">.</span><span class="n">answer_callback_query</span><span class="p">(</span><span class="n">call</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="s2">&quot;Failed to save&quot;</span><span class="p">)</span>
+    <span class="n">contacts</span><span class="p">(</span><span class="n">call</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="save_car"><a class="viewcode-back" href="../contacts.html#contacts.save_car">[docs]</a><span class="k">def</span> <span class="nf">save_car</span><span class="p">(</span><span class="n">call</span><span class="p">,</span> <span class="n">car</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Save car function&quot;&quot;&quot;</span>
+    <span class="n">con</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;supercar.db&quot;</span><span class="p">)</span>
+    <span class="n">cur</span> <span class="o">=</span> <span class="n">con</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+
+    <span class="n">tech_passport</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;SELECT * FROM cars WHERE car_id = ?&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">car</span><span class="o">.</span><span class="n">car_id</span><span class="p">,</span> <span class="p">))</span>
+    <span class="n">cars_data</span> <span class="o">=</span> <span class="n">cur</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">cars_data</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">cars_data</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">tech_passport</span> <span class="o">=</span> <span class="n">cars_data</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span>
+    <span class="n">car</span><span class="o">.</span><span class="n">tech_passport</span> <span class="o">=</span> <span class="n">tech_passport</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">car</span><span class="o">.</span><span class="n">car_id</span><span class="p">,</span> <span class="n">car</span><span class="o">.</span><span class="n">brand</span><span class="p">,</span> <span class="n">car</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+   <span class="n">car</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="n">car</span><span class="o">.</span><span class="n">engine</span><span class="p">,</span> <span class="n">car</span><span class="o">.</span><span class="n">tech_passport</span><span class="p">,</span> <span class="n">call</span><span class="o">.</span><span class="n">from_user</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;INSERT OR REPLACE INTO cars (car_id, brand, model, year, tech_passport, engine, user)</span>
+<span class="s1">            VALUES (?, ?, ?, ?, ?, ?, ?)&#39;&#39;&#39;</span><span class="p">,</span>
+           <span class="p">(</span><span class="n">car</span><span class="o">.</span><span class="n">car_id</span><span class="p">,</span> <span class="n">car</span><span class="o">.</span><span class="n">brand</span><span class="p">,</span> <span class="n">car</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">car</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="n">car</span><span class="o">.</span><span class="n">tech_passport</span><span class="p">,</span> <span class="n">car</span><span class="o">.</span><span class="n">engine</span><span class="p">,</span> <span class="n">call</span><span class="o">.</span><span class="n">from_user</span><span class="o">.</span><span class="n">id</span><span class="p">))</span>
+
+        <span class="n">con</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+        <span class="n">bot</span><span class="o">.</span><span class="n">answer_callback_query</span><span class="p">(</span><span class="n">call</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="s2">&quot;Data saved successfully!&quot;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2"> error occurred: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">bot</span><span class="o">.</span><span class="n">answer_callback_query</span><span class="p">(</span><span class="n">call</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="s2">&quot;Failed to save&quot;</span><span class="p">)</span>
+    <span class="n">contacts</span><span class="p">(</span><span class="n">call</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="car_delete"><a class="viewcode-back" href="../contacts.html#contacts.car_delete">[docs]</a><span class="k">def</span> <span class="nf">car_delete</span><span class="p">(</span><span class="n">call</span><span class="p">,</span> <span class="n">car_id</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Delete car function&quot;&quot;&quot;</span>
+    <span class="n">con</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;supercar.db&quot;</span><span class="p">)</span>
+    <span class="n">cur</span> <span class="o">=</span> <span class="n">con</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+
+    <span class="n">cid</span> <span class="o">=</span> <span class="n">call</span><span class="o">.</span><span class="n">from_user</span><span class="o">.</span><span class="n">id</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;chat_id:</span><span class="si">{</span><span class="n">cid</span><span class="si">}</span><span class="s2">, car_id:</span><span class="si">{</span><span class="n">car_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;SELECT * FROM cars WHERE user = ?&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">cid</span><span class="p">,</span> <span class="p">))</span>
+        <span class="n">cars_data</span> <span class="o">=</span> <span class="n">cur</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+        <span class="n">delete_path</span> <span class="o">=</span> <span class="n">cars_data</span><span class="p">[</span><span class="n">car_id</span><span class="o">%</span><span class="mi">10</span><span class="p">][</span><span class="mi">5</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">delete_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">delete_path</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">delete_path</span><span class="p">)</span>
+        <span class="n">cars_data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">car_id</span><span class="o">%</span><span class="mi">10</span><span class="p">)</span>
+        <span class="n">cars</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">car</span> <span class="ow">in</span> <span class="n">cars_data</span><span class="p">:</span>
+            <span class="n">car_info</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;car_id&#39;</span><span class="p">:</span> <span class="n">car</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+           <span class="s1">&#39;brand&#39;</span><span class="p">:</span> <span class="n">car</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+           <span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="n">car</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+           <span class="s1">&#39;year&#39;</span><span class="p">:</span> <span class="n">car</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
+           <span class="s1">&#39;engine&#39;</span><span class="p">:</span> <span class="n">car</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span>
+           <span class="s1">&#39;tech_passport&#39;</span><span class="p">:</span> <span class="n">car</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span>
+            <span class="p">}</span>
+            <span class="k">if</span> <span class="n">car_info</span><span class="p">[</span><span class="s1">&#39;car_id&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">car_id</span><span class="p">:</span>
+                <span class="n">car_info</span><span class="p">[</span><span class="s1">&#39;car_id&#39;</span><span class="p">]</span> <span class="o">-=</span> <span class="mi">1</span>
+            <span class="n">cars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">car_info</span><span class="p">)</span>
+
+        <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;DELETE FROM cars WHERE user = </span><span class="si">{</span><span class="n">cid</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">car</span> <span class="ow">in</span> <span class="n">cars</span><span class="p">:</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">car</span><span class="p">[</span><span class="s1">&#39;tech_passport&#39;</span><span class="p">]</span>
+            <span class="n">new_path</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">file</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="n">path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">path</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">code</span><span class="p">:</span>
+                    <span class="n">file</span> <span class="o">=</span> <span class="n">code</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">break</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+                <span class="n">new_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;./imgs/cars/</span><span class="si">{</span><span class="n">call</span><span class="o">.</span><span class="n">from_user</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">car</span><span class="p">[</span><span class="s1">&#39;car_id&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">.png&quot;</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">new_path</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">code</span><span class="p">:</span>
+                    <span class="n">code</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+
+            <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;INSERT OR REPLACE INTO cars</span>
+<span class="s1">                (car_id, brand, model, year, tech_passport, engine, user)</span>
+<span class="s1">                VALUES (?, ?, ?, ?, ?, ?, ?)&#39;&#39;&#39;</span><span class="p">,</span>
+            <span class="p">(</span><span class="n">car</span><span class="p">[</span><span class="s1">&#39;car_id&#39;</span><span class="p">],</span>
+             <span class="n">car</span><span class="p">[</span><span class="s1">&#39;brand&#39;</span><span class="p">],</span>
+             <span class="n">car</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">],</span>
+             <span class="n">car</span><span class="p">[</span><span class="s1">&#39;year&#39;</span><span class="p">],</span>
+             <span class="n">new_path</span><span class="p">,</span>
+             <span class="n">car</span><span class="p">[</span><span class="s1">&#39;engine&#39;</span><span class="p">],</span>
+             <span class="n">call</span><span class="o">.</span><span class="n">from_user</span><span class="o">.</span><span class="n">id</span><span class="p">))</span>
+
+        <span class="n">con</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+        <span class="n">bot</span><span class="o">.</span><span class="n">answer_callback_query</span><span class="p">(</span><span class="n">call</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="s2">&quot;Car removed successfully!&quot;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2"> error occurred: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">bot</span><span class="o">.</span><span class="n">answer_callback_query</span><span class="p">(</span><span class="n">call</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="s2">&quot;Failed to remove&quot;</span><span class="p">)</span>
+    <span class="n">contacts</span><span class="p">(</span><span class="n">call</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="save_techpass"><a class="viewcode-back" href="../contacts.html#contacts.save_techpass">[docs]</a><span class="k">def</span> <span class="nf">save_techpass</span><span class="p">(</span><span class="n">call</span><span class="p">,</span> <span class="n">car</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Save tachpassport&quot;&quot;&quot;</span>
+    <span class="n">con</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;supercar.db&quot;</span><span class="p">)</span>
+    <span class="n">cur</span> <span class="o">=</span> <span class="n">con</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;./imgs/cars/</span><span class="si">{</span><span class="n">call</span><span class="o">.</span><span class="n">from_user</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Folder </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2"> created!&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Folder </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2"> already exists&quot;</span><span class="p">)</span>
+
+        <span class="n">path</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;/</span><span class="si">{</span><span class="n">car</span><span class="o">.</span><span class="n">car_id</span><span class="si">}</span><span class="s2">.png&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">code</span><span class="p">:</span>
+            <span class="n">code</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">car</span><span class="o">.</span><span class="n">tech_passport</span><span class="p">)</span>
+
+        <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;&#39;&#39;SELECT * FROM cars WHERE car_id = </span><span class="si">{</span><span class="n">car</span><span class="o">.</span><span class="n">car_id</span><span class="si">}</span><span class="s1">&#39;&#39;&#39;</span><span class="p">)</span>
+        <span class="n">car_data</span> <span class="o">=</span> <span class="n">cur</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">car_data</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;&#39;&#39;UPDATE cars SET tech_passport = &quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s1">&quot; WHERE car_id = </span><span class="si">{</span><span class="n">car</span><span class="o">.</span><span class="n">car_id</span><span class="si">}</span><span class="s1">&#39;&#39;&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;INSERT OR REPLACE INTO cars</span>
+<span class="s1">                (car_id, brand, model, year, engine, tech_passport, user)</span>
+<span class="s1">                VALUES (?, ?, ?, ?, ?, ?, ?)&#39;&#39;&#39;</span><span class="p">,</span>
+            <span class="p">(</span><span class="n">car</span><span class="o">.</span><span class="n">car_id</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">call</span><span class="o">.</span><span class="n">from_user</span><span class="o">.</span><span class="n">id</span><span class="p">))</span>
+
+        <span class="n">con</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+        <span class="n">bot</span><span class="o">.</span><span class="n">answer_callback_query</span><span class="p">(</span><span class="n">call</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="s2">&quot;Tech passport saved successfully!&quot;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2"> error occurred: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">bot</span><span class="o">.</span><span class="n">answer_callback_query</span><span class="p">(</span><span class="n">call</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="s2">&quot;Failed to save tech passport&quot;</span><span class="p">)</span>
+    <span class="n">contacts</span><span class="p">(</span><span class="n">call</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Myroslava R..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

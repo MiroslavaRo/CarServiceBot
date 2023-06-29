@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>services &mdash; Car Service Chatbot 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Car Service Chatbot
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">CarServiceBot</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Car Service Chatbot</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Module code</a></li>
+      <li class="breadcrumb-item active">services</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for services</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Services&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">sqlite3</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">telebot</span> <span class="kn">import</span> <span class="n">types</span>
+<span class="kn">from</span> <span class="nn">telebot.types</span> <span class="kn">import</span> <span class="n">InlineKeyboardMarkup</span><span class="p">,</span> <span class="n">InlineKeyboardButton</span>
+<span class="kn">import</span> <span class="nn">credentials</span>
+<span class="kn">import</span> <span class="nn">design</span>
+<span class="kn">import</span> <span class="nn">models</span>
+<span class="kn">import</span> <span class="nn">texts</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+
+<span class="c1"># Bot instance</span>
+<span class="n">bot</span> <span class="o">=</span> <span class="n">credentials</span><span class="o">.</span><span class="n">bot</span>
+
+<span class="n">services_dict</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">services_dict</span>
+
+<div class="viewcode-block" id="service_info"><a class="viewcode-back" href="../services.html#services.service_info">[docs]</a><span class="k">def</span> <span class="nf">service_info</span><span class="p">(</span><span class="n">service_id</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Gets data about services by its id from data base&quot;&quot;&quot;</span>
+    <span class="n">con</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;supercar.db&quot;</span><span class="p">)</span>
+    <span class="n">cursor</span> <span class="o">=</span> <span class="n">con</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+
+    <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;SELECT * FROM services WHERE service_id=?&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">service_id</span><span class="p">,</span> <span class="p">))</span>
+    <span class="n">service_var</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">service_var</span><span class="p">:</span>
+        <span class="n">service_info_var</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;service_id&#39;</span><span class="p">:</span> <span class="n">service_var</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="s1">&#39;service_name&#39;</span><span class="p">:</span> <span class="n">service_var</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+            <span class="s1">&#39;service_info&#39;</span><span class="p">:</span> <span class="n">service_var</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+            <span class="s1">&#39;price&#39;</span><span class="p">:</span> <span class="n">service_var</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+        <span class="p">}</span>
+
+        <span class="n">con</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">service_info_var</span>
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="services_info"><a class="viewcode-back" href="../services.html#services.services_info">[docs]</a><span class="k">def</span> <span class="nf">services_info</span><span class="p">(</span><span class="n">service_name</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Gets data about services by its name from data base&quot;&quot;&quot;</span>
+    <span class="n">con</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;supercar.db&quot;</span><span class="p">)</span>
+    <span class="n">cursor</span> <span class="o">=</span> <span class="n">con</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+
+    <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;SELECT * FROM services WHERE service_name=?&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">service_name</span><span class="p">,</span> <span class="p">))</span>
+    <span class="n">service_var</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">service_var</span><span class="p">:</span>
+        <span class="n">service_info_var</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;service_id&#39;</span><span class="p">:</span> <span class="n">service_var</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="s1">&#39;service_name&#39;</span><span class="p">:</span> <span class="n">service_var</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+            <span class="s1">&#39;service_info&#39;</span><span class="p">:</span> <span class="n">service_var</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+            <span class="s1">&#39;price&#39;</span><span class="p">:</span> <span class="n">service_var</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+        <span class="p">}</span>
+
+        <span class="n">con</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">service_info_var</span>
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="service"><a class="viewcode-back" href="../services.html#services.service">[docs]</a><span class="k">def</span> <span class="nf">service</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Gets info about specific service and saves it into global variable services_dict&quot;&quot;&quot;</span>
+    <span class="n">service_var</span> <span class="o">=</span> <span class="n">services_info</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">service_var</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">srvc</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">Service</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">srvc</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">service_var</span><span class="p">[</span><span class="s1">&#39;service_name&#39;</span><span class="p">]</span>
+        <span class="n">srvc</span><span class="o">.</span><span class="n">price</span> <span class="o">=</span> <span class="n">service_var</span><span class="p">[</span><span class="s1">&#39;price&#39;</span><span class="p">]</span>
+
+        <span class="n">services_dict</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">srvc</span>
+        <span class="k">return</span> <span class="n">srvc</span>
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+<span class="c1"># ------------------------------PRICELIST------------------------------</span>
+<div class="viewcode-block" id="pricelist"><a class="viewcode-back" href="../services.html#services.pricelist">[docs]</a><span class="k">def</span> <span class="nf">pricelist</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Constructs info about pricelist into message and returns&quot;&quot;&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;undercarriage diagnostics&#39;</span>
+    <span class="n">undercarriage_msg</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+    <span class="k">if</span> <span class="n">service</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">undercarriage_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">   -  Undercarriage diagnostics - &lt;b&gt;BGN </span><span class="si">{</span><span class="n">services_dict</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">price</span><span class="si">}</span><span class="s1">&lt;/b&gt;;&#39;&#39;&#39;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;computer diagnostics&#39;</span>
+    <span class="n">comp_diagnostic_msg</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+    <span class="k">if</span> <span class="n">service</span><span class="p">(</span><span class="s1">&#39;computer diagnostics&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">comp_diagnostic_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">   -  Computer diagnostics - &lt;b&gt;BGN </span><span class="si">{</span><span class="n">services_dict</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">price</span><span class="si">}</span><span class="s1">&lt;/b&gt;;&#39;&#39;&#39;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;maintenance&#39;</span>
+    <span class="n">maintenance_msg</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+    <span class="k">if</span> <span class="n">service</span><span class="p">(</span><span class="s1">&#39;maintenance&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">maintenance_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">   -  Maintenance - &lt;b&gt;from BGN </span><span class="si">{</span><span class="n">services_dict</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">price</span><span class="si">}</span><span class="s1">&lt;/b&gt;;&#39;&#39;&#39;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;painting&#39;</span>
+    <span class="n">painting_msg</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+    <span class="k">if</span> <span class="n">service</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">painting_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">   -  Painting, scaffolding of a car - &lt;b&gt;from BGN </span><span class="si">{</span><span class="n">services_dict</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">price</span><span class="si">}</span><span class="s1">&lt;/b&gt;;&#39;&#39;&#39;</span>
+
+    <span class="c1"># scaffolding = service(&#39;scaffolding&#39;)</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;polishing&#39;</span>
+    <span class="n">polishing_msg</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+    <span class="k">if</span> <span class="n">service</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">polishing_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">   -  Car polishing - &lt;b&gt;from BGN </span><span class="si">{</span><span class="n">services_dict</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">price</span><span class="si">}</span><span class="s1">&lt;/b&gt;.&#39;&#39;&#39;</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">services_dict</span><span class="p">:</span>
+        <span class="n">design</span><span class="o">.</span><span class="n">service_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">services_dict</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+    <span class="n">text</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;&#39;&#39;🎩 Our company provides a wide range of services.</span>
+<span class="s1">You can learn about each in detail by selecting an option in the keyboard!</span>
+<span class="s1">    </span>
+<span class="s1">    💸 &lt;b&gt;Price list&lt;/b&gt; 💸</span>
+<span class="si">{</span><span class="n">undercarriage_msg</span><span class="si">}{</span><span class="n">comp_diagnostic_msg</span><span class="si">}{</span><span class="n">maintenance_msg</span><span class="si">}{</span><span class="n">painting_msg</span><span class="si">}{</span><span class="n">polishing_msg</span><span class="si">}</span>
+
+<span class="s1">❗️ &lt;b&gt;Please note that prices may vary depending on the complexity of the work. ✅&lt;/b&gt;</span>
+<span class="s1">&#39;&#39;&#39;</span>
+    <span class="k">return</span> <span class="n">text</span></div>
+
+<div class="viewcode-block" id="price_call"><a class="viewcode-back" href="../services.html#services.price_call">[docs]</a><span class="k">def</span> <span class="nf">price_call</span><span class="p">(</span><span class="n">call</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sends pricelist to user as message (accepts call as a parameter)&quot;&quot;&quot;</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="n">pricelist</span><span class="p">()</span>
+    <span class="n">bot</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="n">call</span><span class="o">.</span><span class="n">from_user</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">parse_mode</span><span class="o">=</span><span class="s1">&#39;html&#39;</span><span class="p">,</span> <span class="n">reply_markup</span><span class="o">=</span><span class="n">keyboard_services</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="price_msg"><a class="viewcode-back" href="../services.html#services.price_msg">[docs]</a><span class="k">def</span> <span class="nf">price_msg</span><span class="p">(</span><span class="n">message</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sends pricelist to user as message (accepts message as a parameter)&quot;&quot;&quot;</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="n">pricelist</span><span class="p">()</span>
+    <span class="n">bot</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">from_user</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">parse_mode</span><span class="o">=</span><span class="s1">&#39;html&#39;</span><span class="p">,</span> <span class="n">reply_markup</span><span class="o">=</span><span class="n">keyboard_services</span><span class="p">())</span></div>
+
+<span class="c1"># ------------------2.SERVICES---------------------</span>
+
+<span class="n">services_btns</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;🔍Diagnostics&quot;</span><span class="p">,</span> <span class="s2">&quot;💧Maintenance&quot;</span><span class="p">,</span> <span class="s2">&quot;💨Conditioner&quot;</span><span class="p">,</span> <span class="s2">&quot;🌈Painting&quot;</span><span class="p">,</span> <span class="s2">&quot;🪛Repair&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;⬅️Back&quot;</span><span class="p">,</span> <span class="s2">&quot;Ask question❓&quot;</span>
+<span class="p">]</span>
+
+<div class="viewcode-block" id="keyboard_services"><a class="viewcode-back" href="../services.html#services.keyboard_services">[docs]</a><span class="k">def</span> <span class="nf">keyboard_services</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns buttons to choose specific service&quot;&quot;&quot;</span>
+    <span class="n">menu_keyboard</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">ReplyKeyboardMarkup</span><span class="p">(</span><span class="n">resize_keyboard</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">btn1</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">KeyboardButton</span><span class="p">(</span><span class="s2">&quot;🔍Diagnostics&quot;</span><span class="p">)</span>
+    <span class="n">btn2</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">KeyboardButton</span><span class="p">(</span><span class="s2">&quot;💧Maintenance&quot;</span><span class="p">)</span>
+    <span class="n">btn3</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">KeyboardButton</span><span class="p">(</span><span class="s2">&quot;💨Conditioner&quot;</span><span class="p">)</span>
+    <span class="n">btn5</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">KeyboardButton</span><span class="p">(</span><span class="s2">&quot;🌈Painting&quot;</span><span class="p">)</span>
+    <span class="n">btn6</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">KeyboardButton</span><span class="p">(</span><span class="s2">&quot;🪛Repair&quot;</span><span class="p">)</span>
+    <span class="n">btn_back</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">KeyboardButton</span><span class="p">(</span><span class="s2">&quot;⬅️Back&quot;</span><span class="p">)</span>
+    <span class="n">btn_ask</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">KeyboardButton</span><span class="p">(</span><span class="s2">&quot;Ask question❓&quot;</span><span class="p">)</span>
+
+    <span class="n">menu_keyboard</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">btn1</span><span class="p">,</span> <span class="n">btn2</span><span class="p">,</span> <span class="n">btn3</span><span class="p">,</span> <span class="n">btn5</span><span class="p">,</span> <span class="n">btn6</span><span class="p">)</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">btn_back</span><span class="p">,</span> <span class="n">btn_ask</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">menu_keyboard</span></div>
+
+
+<div class="viewcode-block" id="handle_menu_click"><a class="viewcode-back" href="../services.html#services.handle_menu_click">[docs]</a><span class="nd">@bot</span><span class="o">.</span><span class="n">message_handler</span><span class="p">(</span><span class="n">func</span><span class="o">=</span><span class="k">lambda</span> <span class="n">message</span><span class="p">:</span> <span class="n">message</span><span class="o">.</span><span class="n">text</span> <span class="ow">in</span> <span class="n">services_btns</span><span class="p">)</span>
+<span class="nd">@bot</span><span class="o">.</span><span class="n">message_handler</span><span class="p">(</span><span class="n">func</span><span class="o">=</span><span class="k">lambda</span> <span class="n">message</span><span class="p">:</span> <span class="n">message</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">design</span><span class="o">.</span><span class="n">service_names</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">handle_menu_click</span><span class="p">(</span><span class="n">message</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Displays menu-message that displays and allows to choose specific service&quot;&quot;&quot;</span>
+    <span class="n">cid</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">from_user</span><span class="o">.</span><span class="n">id</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">text</span> <span class="o">==</span> <span class="s2">&quot;🔍Diagnostics&quot;</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">design</span><span class="o">.</span><span class="n">key_diagnostics</span><span class="p">):</span>
+        <span class="n">photo</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;imgs/diagnostics.jpg&#39;</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span>
+        <span class="n">bot</span><span class="o">.</span><span class="n">send_photo</span><span class="p">(</span><span class="n">cid</span><span class="p">,</span> <span class="n">photo</span><span class="p">,</span> <span class="n">texts</span><span class="o">.</span><span class="n">DIAGNOSTICS</span><span class="p">,</span> <span class="n">parse_mode</span><span class="o">=</span><span class="s1">&#39;html&#39;</span><span class="p">,</span> <span class="n">reply_markup</span> <span class="o">=</span> <span class="n">diagn_bttns</span><span class="p">())</span>
+    <span class="k">elif</span> <span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">text</span> <span class="o">==</span> <span class="s2">&quot;💧Maintenance&quot;</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">design</span><span class="o">.</span><span class="n">key_maintenance</span><span class="p">):</span>
+        <span class="n">maintence</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">text</span> <span class="o">==</span> <span class="s2">&quot;💨Conditioner&quot;</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">design</span><span class="o">.</span><span class="n">key_conditioner</span><span class="p">):</span>
+        <span class="n">conditioner</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">text</span> <span class="o">==</span> <span class="s2">&quot;🌈Painting&quot;</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">design</span><span class="o">.</span><span class="n">key_paint</span><span class="p">):</span>
+        <span class="n">painting</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">text</span> <span class="o">==</span> <span class="s2">&quot;🪛Repair&quot;</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">design</span><span class="o">.</span><span class="n">key_repair</span><span class="p">):</span>
+        <span class="n">photo</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;imgs/repair.jpg&#39;</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span>
+        <span class="n">photo</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;imgs/repair.jpg&#39;</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span>
+        <span class="n">bot</span><span class="o">.</span><span class="n">send_photo</span><span class="p">(</span><span class="n">cid</span><span class="p">,</span> <span class="n">photo</span><span class="p">,</span> <span class="s2">&quot;Sign up for repair&quot;</span><span class="p">,</span> <span class="n">parse_mode</span><span class="o">=</span><span class="s1">&#39;html&#39;</span><span class="p">,</span> <span class="n">reply_markup</span> <span class="o">=</span> <span class="n">signup</span><span class="p">(</span><span class="s1">&#39;repair&#39;</span><span class="p">))</span> <span class="c1"># comments</span>
+    <span class="k">elif</span> <span class="n">message</span><span class="o">.</span><span class="n">text</span> <span class="o">==</span> <span class="s2">&quot;⬅️Back&quot;</span><span class="p">:</span>
+        <span class="c1"># bot.send_message(cid, &quot;How can we help you?&quot;, reply_markup = design.keyboard())</span>
+        <span class="n">photo</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;imgs/welcome.jpg&#39;</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span>
+        <span class="n">bot</span><span class="o">.</span><span class="n">send_photo</span><span class="p">(</span><span class="n">cid</span><span class="p">,</span> <span class="n">photo</span><span class="p">,</span> <span class="n">texts</span><span class="o">.</span><span class="n">WELCOME_TEXT</span><span class="p">,</span> <span class="n">parse_mode</span><span class="o">=</span><span class="s1">&#39;html&#39;</span><span class="p">,</span> <span class="n">reply_markup</span> <span class="o">=</span> <span class="n">design</span><span class="o">.</span><span class="n">welcome_message_with_buttons</span><span class="p">())</span>
+        <span class="n">bot</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="n">cid</span><span class="p">,</span> <span class="n">texts</span><span class="o">.</span><span class="n">KEYBOARD</span><span class="p">,</span> <span class="n">parse_mode</span><span class="o">=</span><span class="s1">&#39;html&#39;</span><span class="p">,</span> <span class="n">reply_markup</span> <span class="o">=</span> <span class="n">design</span><span class="o">.</span><span class="n">keyboard</span><span class="p">())</span>
+    <span class="k">elif</span> <span class="n">message</span><span class="o">.</span><span class="n">text</span> <span class="o">==</span> <span class="s2">&quot;Ask question❓&quot;</span><span class="p">:</span>
+        <span class="n">button_list</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">InlineKeyboardButton</span><span class="p">(</span><span class="s2">&quot;Chat with manager&quot;</span><span class="p">,</span> <span class="n">url</span><span class="o">=</span><span class="s1">&#39;https://t.me/ryuVitoshi&#39;</span><span class="p">)</span>
+        <span class="p">]</span>
+        <span class="n">reply_markup</span> <span class="o">=</span> <span class="n">InlineKeyboardMarkup</span><span class="p">(</span><span class="n">design</span><span class="o">.</span><span class="n">build_menu</span><span class="p">(</span><span class="n">button_list</span><span class="p">,</span> <span class="n">n_cols</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">photo</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;imgs/question.jpg&#39;</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span>
+        <span class="n">bot</span><span class="o">.</span><span class="n">send_photo</span><span class="p">(</span><span class="n">cid</span><span class="p">,</span> <span class="n">photo</span><span class="p">,</span> <span class="n">texts</span><span class="o">.</span><span class="n">ASK</span><span class="p">,</span> <span class="n">parse_mode</span><span class="o">=</span><span class="s1">&#39;html&#39;</span><span class="p">,</span> <span class="n">reply_markup</span> <span class="o">=</span> <span class="n">reply_markup</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="signup"><a class="viewcode-back" href="../services.html#services.signup">[docs]</a><span class="k">def</span> <span class="nf">signup</span><span class="p">(</span><span class="n">service_name</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Allows user to sign up to specific service&quot;&quot;&quot;</span>
+    <span class="n">button_list</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">InlineKeyboardButton</span><span class="p">(</span><span class="s2">&quot;Sign up&quot;</span><span class="p">,</span> <span class="n">callback_data</span><span class="o">=</span><span class="n">service_name</span><span class="p">)</span>
+    <span class="p">]</span>
+    <span class="n">reply_markup</span> <span class="o">=</span> <span class="n">InlineKeyboardMarkup</span><span class="p">(</span><span class="n">design</span><span class="o">.</span><span class="n">build_menu</span><span class="p">(</span><span class="n">button_list</span><span class="p">,</span> <span class="n">n_cols</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">reply_markup</span></div>
+<span class="c1"># ---------------------SERVICES INFO--------------</span>
+
+<span class="c1"># DIAGNOSTIC------------------------------</span>
+<div class="viewcode-block" id="diagn_bttns"><a class="viewcode-back" href="../services.html#services.diagn_bttns">[docs]</a><span class="k">def</span> <span class="nf">diagn_bttns</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns buttons to chose diagnostics&quot;&quot;&quot;</span>
+    <span class="n">button_list</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">InlineKeyboardButton</span><span class="p">(</span><span class="s2">&quot;Undercarriage diagnostics&quot;</span><span class="p">,</span> <span class="n">callback_data</span> <span class="o">=</span> <span class="s2">&quot;under_diagnostic&quot;</span><span class="p">),</span>
+         <span class="n">InlineKeyboardButton</span><span class="p">(</span><span class="s2">&quot;Computer diagnostics&quot;</span><span class="p">,</span> <span class="n">callback_data</span> <span class="o">=</span> <span class="s2">&quot;comp_diagnostic&quot;</span><span class="p">)</span>
+    <span class="p">]</span>
+    <span class="n">reply_markup</span> <span class="o">=</span> <span class="n">InlineKeyboardMarkup</span><span class="p">(</span><span class="n">design</span><span class="o">.</span><span class="n">build_menu</span><span class="p">(</span><span class="n">button_list</span><span class="p">,</span> <span class="n">n_cols</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">reply_markup</span></div>
+
+<div class="viewcode-block" id="under_diagnostic"><a class="viewcode-back" href="../services.html#services.under_diagnostic">[docs]</a><span class="k">def</span> <span class="nf">under_diagnostic</span><span class="p">(</span><span class="n">chat_id</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Displays info about diagnostics&quot;&quot;&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;undercarriage diagnostics&#39;</span>
+    <span class="k">if</span> <span class="n">service</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">photo</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;imgs/under.jpg&#39;</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span>
+        <span class="n">bot</span><span class="o">.</span><span class="n">send_photo</span><span class="p">(</span><span class="n">chat_id</span><span class="p">,</span> <span class="n">photo</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;&#39;&#39;⚙️&lt;b&gt;Undercarriage diagnostics&lt;/b&gt;⚙️</span>
+
+<span class="s1">✅ We will carry out a qualitative inspection of &lt;b&gt;all components and elements&lt;/b&gt; of the chassis that affect safety and quality of driving.</span>
+<span class="s1">✅ We will also advise on the replacement of auto parts.</span>
+
+<span class="s1">💸 Estimated price – &lt;b&gt;BGN </span><span class="si">{</span><span class="n">services_dict</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">price</span><span class="si">}</span><span class="s1">&lt;/b&gt;.</span>
+
+<span class="s1">👍If necessary, we can also &lt;b&gt;order new spare parts or carry out repairs&lt;/b&gt;, after agreement with you.</span>
+<span class="s1">💸 The price of this service depends on the complexity of the work, approximately from &lt;b&gt;BGN </span><span class="si">{</span><span class="n">services_dict</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">price</span><span class="o">+</span><span class="mi">15</span><span class="si">}</span><span class="s1">&lt;/b&gt;.</span>
+
+<span class="s1">&lt;b&gt;Sign up&lt;/b&gt; for undercarriage diagnosis 👇👇👇&#39;&#39;&#39;</span><span class="p">,</span> 
+<span class="n">parse_mode</span><span class="o">=</span><span class="s1">&#39;html&#39;</span><span class="p">,</span> <span class="n">reply_markup</span> <span class="o">=</span> <span class="n">signup</span><span class="p">(</span><span class="s1">&#39;undercarriage&#39;</span><span class="p">))</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;Unfortunetly, service unavailable 😔&quot;</span>
+        <span class="n">bot</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="n">chat_id</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">parse_mode</span><span class="o">=</span><span class="s1">&#39;html&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="comp_diagnostic"><a class="viewcode-back" href="../services.html#services.comp_diagnostic">[docs]</a><span class="k">def</span> <span class="nf">comp_diagnostic</span><span class="p">(</span><span class="n">chat_id</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Displays info about computer diagnostics&quot;&quot;&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;computer diagnostics&#39;</span>
+    <span class="n">comp_diagnostic_var</span> <span class="o">=</span> <span class="n">service</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">comp_diagnostic_var</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">comp_diagnostic_price</span> <span class="o">=</span> <span class="n">services_dict</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">price</span>
+        <span class="n">photo</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;imgs/comp.jpg&#39;</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span>
+        <span class="n">bot</span><span class="o">.</span><span class="n">send_photo</span><span class="p">(</span><span class="n">chat_id</span><span class="p">,</span> <span class="n">photo</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;&#39;&#39;🖥️&lt;b&gt;Computer diagnostics&lt;/b&gt;🖥️</span>
+
+<span class="s1">✅ We will check all &lt;b&gt;nodes and control units&lt;/b&gt; of your car for the presence of errors that affect the safety and quality of driving.</span>
+<span class="s1">❗️(The work is performed using &lt;b&gt;the official computer diagnostic software&lt;/b&gt; LAUNCH X-431 PRO v4.0)</span>
+
+<span class="s1">💸 Approximate price – &lt;b&gt;BGN </span><span class="si">{</span><span class="n">comp_diagnostic_price</span><span class="si">}</span><span class="s1">&lt;/b&gt;.</span>
+
+<span class="s1">&lt;b&gt;Sign up&lt;/b&gt; for computer diagnostics 👇👇👇&#39;&#39;&#39;</span><span class="p">,</span> <span class="n">parse_mode</span><span class="o">=</span><span class="s1">&#39;html&#39;</span><span class="p">,</span> <span class="n">reply_markup</span> <span class="o">=</span> <span class="n">signup</span><span class="p">(</span><span class="s1">&#39;computer&#39;</span><span class="p">))</span></div>
+
+
+<span class="c1"># CAR MAINTENCES-------------------------------------</span>
+<div class="viewcode-block" id="maintence"><a class="viewcode-back" href="../services.html#services.maintence">[docs]</a><span class="k">def</span> <span class="nf">maintence</span><span class="p">(</span><span class="n">msg</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Displays info about maintence&quot;&quot;&quot;</span>
+    <span class="n">maintenance</span> <span class="o">=</span> <span class="s1">&#39;maintenance&#39;</span>
+    <span class="n">comprehensive</span> <span class="o">=</span> <span class="s1">&#39;comprehensive maintenance&#39;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">service</span><span class="p">(</span><span class="n">maintenance</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">service</span><span class="p">(</span><span class="n">comprehensive</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="n">maintenance_price</span> <span class="o">=</span> <span class="n">services_dict</span><span class="p">[</span><span class="n">maintenance</span><span class="p">]</span><span class="o">.</span><span class="n">price</span>
+        <span class="n">comprehensive_maintenance_price</span> <span class="o">=</span> <span class="n">services_dict</span><span class="p">[</span><span class="n">comprehensive</span><span class="p">]</span><span class="o">.</span><span class="n">price</span>
+
+        <span class="n">text</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;&#39;&#39;🔩&lt;b&gt;Car maintenance&lt;/b&gt;🔩</span>
+
+<span class="s1">This section includes the following services:</span>
+<span class="s1">    1. Changing oil and filtering - &lt;b&gt;from BGN </span><span class="si">{</span><span class="n">maintenance_price</span><span class="si">}</span><span class="s1">&lt;/b&gt;.💧</span>
+<span class="s1">    2. Comprehensive maintenance - &lt;b&gt;from BGN </span><span class="si">{</span><span class="n">comprehensive_maintenance_price</span><span class="si">}</span><span class="s1">&lt;/b&gt;.🩸</span>
+<span class="s1">    (replacement of oil and filters, check of running gear and computer adjustment)</span>
+
+<span class="s1">&lt;b&gt;Sign up&lt;/b&gt; for maintenance 👇👇👇&#39;&#39;&#39;</span>
+        <span class="n">photo</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;imgs/maintenance.jpeg&#39;</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span>
+        <span class="n">bot</span><span class="o">.</span><span class="n">send_photo</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">from_user</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">photo</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">parse_mode</span><span class="o">=</span><span class="s1">&#39;html&#39;</span><span class="p">,</span> <span class="n">reply_markup</span><span class="o">=</span><span class="n">maintence_types</span><span class="p">())</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;Unfortunetly, service unavailable 😔&quot;</span>
+        <span class="n">bot</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">from_user</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">parse_mode</span><span class="o">=</span><span class="s1">&#39;html&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="maintence_types"><a class="viewcode-back" href="../services.html#services.maintence_types">[docs]</a><span class="k">def</span> <span class="nf">maintence_types</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns buttons for choosing maintence&quot;&quot;&quot;</span>
+    <span class="n">button_list</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">InlineKeyboardButton</span><span class="p">(</span><span class="s2">&quot;Maintenance&quot;</span><span class="p">,</span> <span class="n">callback_data</span><span class="o">=</span><span class="s1">&#39;maintenance&#39;</span><span class="p">),</span>
+        <span class="n">InlineKeyboardButton</span><span class="p">(</span><span class="s2">&quot;Comprehensive maintenance&quot;</span><span class="p">,</span> <span class="n">callback_data</span><span class="o">=</span><span class="s1">&#39;comprehensive_maintenance&#39;</span><span class="p">)</span>
+    <span class="p">]</span>
+    <span class="n">reply_markup</span> <span class="o">=</span> <span class="n">InlineKeyboardMarkup</span><span class="p">(</span><span class="n">design</span><span class="o">.</span><span class="n">build_menu</span><span class="p">(</span><span class="n">button_list</span><span class="p">,</span> <span class="n">n_cols</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">reply_markup</span></div>
+
+<div class="viewcode-block" id="maintence_components"><a class="viewcode-back" href="../services.html#services.maintence_components">[docs]</a><span class="k">def</span> <span class="nf">maintence_components</span><span class="p">():</span>  <span class="c1"># maintence_components remove parameter call</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Displays info about maintence_components&quot;&quot;&quot;</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;📃 &lt;b&gt;Availability and ordering of components&lt;/b&gt; 📃</span>
+
+<span class="s1">✅ Indicate if you have oil and filters available (For example: 2 liters of oil, 4 filters).</span>
+
+<span class="s1">✍️ Indicate if you need something to order:</span>
+<span class="s1">    -	Oil 💧</span>
+<span class="s1">    -	Filter 🛢️</span>
+<span class="s1">    -	Everything 🗒️&#39;&#39;&#39;</span>
+
+    <span class="k">return</span> <span class="n">text</span></div>
+
+<span class="c1"># CONDITIONER------------------------------</span>
+<div class="viewcode-block" id="conditioner"><a class="viewcode-back" href="../services.html#services.conditioner">[docs]</a><span class="k">def</span> <span class="nf">conditioner</span><span class="p">(</span><span class="n">msg</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Displays info about conditioner&quot;&quot;&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;refueling air conditioner&#39;</span>
+    <span class="n">cid</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">from_user</span><span class="o">.</span><span class="n">id</span>
+    <span class="k">if</span> <span class="n">service</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">conditioner_price</span> <span class="o">=</span> <span class="n">services_dict</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">price</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;&#39;&#39;🌀Refueling the air conditioner🌀</span>
+
+<span class="s1">💸 The price depends on the volume of freon and additional work on system diagnostics.</span>
+
+<span class="s1">Approximetly &lt;b&gt;BGN </span><span class="si">{</span><span class="n">conditioner_price</span><span class="si">}</span><span class="s1">&lt;/b&gt;.</span>
+
+<span class="s1">    Sign up for a refueling the air conditioner 👇👇👇&#39;&#39;&#39;</span>
+        <span class="n">photo</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;imgs/conditioner.jpg&#39;</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span>
+        <span class="n">bot</span><span class="o">.</span><span class="n">send_photo</span><span class="p">(</span><span class="n">cid</span><span class="p">,</span> <span class="n">photo</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">parse_mode</span><span class="o">=</span><span class="s1">&#39;html&#39;</span><span class="p">,</span> <span class="n">reply_markup</span><span class="o">=</span><span class="n">signup</span><span class="p">(</span><span class="s1">&#39;conditioner&#39;</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;Unfortunetly, service unavailable 😔&quot;</span>
+        <span class="n">bot</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="n">cid</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">parse_mode</span><span class="o">=</span><span class="s1">&#39;html&#39;</span><span class="p">)</span></div>
+
+<span class="c1"># PAINTING------------------------------------</span>
+<div class="viewcode-block" id="painting"><a class="viewcode-back" href="../services.html#services.painting">[docs]</a><span class="k">def</span> <span class="nf">painting</span><span class="p">(</span><span class="n">message</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Menu-message for choosing service&quot;&quot;&quot;</span>
+    <span class="n">paint_m</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+    <span class="n">scaf_</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+    <span class="n">pol_m</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+    <span class="n">paint</span> <span class="o">=</span> <span class="s1">&#39;painting&#39;</span>
+    <span class="k">if</span> <span class="n">service</span><span class="p">(</span><span class="n">paint</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">painting_price</span> <span class="o">=</span> <span class="n">services_dict</span><span class="p">[</span><span class="n">paint</span><span class="p">]</span><span class="o">.</span><span class="n">price</span>
+        <span class="n">paint_m</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">    -	Painting of 1 element - from &lt;b&gt;BGN </span><span class="si">{</span><span class="n">services_dict</span><span class="p">[</span><span class="n">paint</span><span class="p">]</span><span class="o">.</span><span class="n">price</span><span class="si">}</span><span class="s2">&lt;/b&gt;;&quot;</span>
+
+    <span class="n">scaf</span> <span class="o">=</span> <span class="s1">&#39;scaffolding&#39;</span>
+    <span class="k">if</span> <span class="n">service</span><span class="p">(</span><span class="n">scaf</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># scaffolding_paint_price = services_dict[scaf].price+painting_price</span>
+        <span class="n">scaf_</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">    -	Scaffolding with painting – &lt;b&gt;from BGN </span><span class="si">{</span><span class="n">services_dict</span><span class="p">[</span><span class="n">scaf</span><span class="p">]</span><span class="o">.</span><span class="n">price</span><span class="o">+</span><span class="n">painting_price</span><span class="si">}</span><span class="s1">&lt;/b&gt;;&#39;&#39;&#39;</span>
+
+    <span class="n">polishing</span> <span class="o">=</span> <span class="s1">&#39;polishing&#39;</span>
+    <span class="k">if</span> <span class="n">service</span><span class="p">(</span><span class="n">polishing</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">polishing_price</span> <span class="o">=</span> <span class="n">services_dict</span><span class="p">[</span><span class="n">polishing</span><span class="p">]</span><span class="o">.</span><span class="n">price</span>
+        <span class="n">pol_m</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">   -	Polishing - &lt;b&gt;from BGN </span><span class="si">{</span><span class="n">polishing_price</span><span class="si">}</span><span class="s2">&lt;/b&gt;.&quot;</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">paint_m</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">scaf_</span><span class="o">!=</span> <span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">pol_m</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span><span class="p">):</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;&#39;&#39;✨Scaffolding, painting, polishing of the car🎨</span>
+
+<span class="s1">💸 The price depends on the volume of work and its urgency:</span>
+<span class="s1">    </span><span class="si">{</span><span class="n">paint_m</span><span class="si">}{</span><span class="n">scaf_</span><span class="si">}{</span><span class="n">pol_m</span><span class="si">}</span>
+
+<span class="s1">&lt;b&gt;Choose&lt;/b&gt; the required variant and &lt;b&gt;sign up&lt;/b&gt;👇👇👇&#39;&#39;&#39;</span>
+        <span class="n">photo</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;imgs/painting.jpg&#39;</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span>
+        <span class="n">bot</span><span class="o">.</span><span class="n">send_photo</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">from_user</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">photo</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">parse_mode</span><span class="o">=</span><span class="s1">&#39;html&#39;</span><span class="p">,</span> <span class="n">reply_markup</span><span class="o">=</span><span class="n">pps_type</span><span class="p">())</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;Unfortunetly, service unavailable 😔&quot;</span>
+        <span class="n">bot</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">from_user</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">parse_mode</span><span class="o">=</span><span class="s1">&#39;html&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="pps_type"><a class="viewcode-back" href="../services.html#services.pps_type">[docs]</a><span class="k">def</span> <span class="nf">pps_type</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns buttons for choosing required variant&quot;&quot;&quot;</span>
+    <span class="n">button_list</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">InlineKeyboardButton</span><span class="p">(</span><span class="s2">&quot;Painting&quot;</span><span class="p">,</span> <span class="n">callback_data</span><span class="o">=</span><span class="s1">&#39;painting&#39;</span><span class="p">),</span>
+        <span class="n">InlineKeyboardButton</span><span class="p">(</span><span class="s2">&quot;Scaffolding&quot;</span><span class="p">,</span> <span class="n">callback_data</span><span class="o">=</span><span class="s1">&#39;scaffolding&#39;</span><span class="p">),</span>
+        <span class="n">InlineKeyboardButton</span><span class="p">(</span><span class="s2">&quot;Polishing&quot;</span><span class="p">,</span> <span class="n">callback_data</span><span class="o">=</span><span class="s1">&#39;polishing&#39;</span><span class="p">),</span>
+        <span class="n">InlineKeyboardButton</span><span class="p">(</span><span class="s2">&quot;Scaffolding and painting&quot;</span><span class="p">,</span> <span class="n">callback_data</span><span class="o">=</span><span class="s1">&#39;scaffolding_painting&#39;</span><span class="p">),</span>
+        <span class="n">InlineKeyboardButton</span><span class="p">(</span><span class="s2">&quot;Everything&quot;</span><span class="p">,</span> <span class="n">callback_data</span><span class="o">=</span><span class="s1">&#39;p_everything&#39;</span><span class="p">)</span>
+    <span class="p">]</span>
+    <span class="n">reply_markup</span> <span class="o">=</span> <span class="n">InlineKeyboardMarkup</span><span class="p">(</span><span class="n">design</span><span class="o">.</span><span class="n">build_menu</span><span class="p">(</span><span class="n">button_list</span><span class="p">,</span> <span class="n">n_cols</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">reply_markup</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Myroslava R..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
